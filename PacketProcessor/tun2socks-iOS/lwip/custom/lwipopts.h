@@ -30,6 +30,14 @@
 #ifndef LWIP_CUSTOM_LWIPOPTS_H
 #define LWIP_CUSTOM_LWIPOPTS_H
 
+/* Avoid clash with Darwin <netinet/icmp6.h> under Clang modules (Xcode 15+).
+ * udp.c includes lwip/icmp6.h even when LWIP_IPV6=0; both define struct icmp6_hdr. */
+#if defined(__APPLE__)
+#define icmp6_hdr      lwip_icmp6_hdr
+#define icmp6_echo_hdr lwip_icmp6_echo_hdr
+#define ip6_hdr        lwip_ip6_hdr
+#endif
+
 #define NO_SYS 1
 #define MEM_ALIGNMENT 4
 

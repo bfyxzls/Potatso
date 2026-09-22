@@ -57,3 +57,7 @@ Gemfile.lock
 
 Confidential/
 Confidential.h
+
+# Local CI failure logs
+archive*.log
+archive copy*.log

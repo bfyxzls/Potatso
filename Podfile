@@ -40,7 +40,8 @@ target "Potatso" do
     pod 'Alamofire', '4.9.1'
     pod 'ObjectMapper', '4.2.0'
     pod 'CocoaLumberjack/Swift', '3.0.0'
-    pod 'PSOperations', '4.1.0'
+    # Vendored Core (Xcode 15 fix). Do NOT use CocoaPods trunk 4.x / 5.0.x tags.
+    pod 'PSOperations', :path => './Vendor/PSOperations'
     tunnel
     library
     socket

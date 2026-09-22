@@ -99,12 +99,31 @@ jobs:
       - name: Install Pods
         run: |
           set -euo pipefail
-          # Fresh resolve from Podfile pins (no committed lockfile — avoids CocoaPods
-          # lockfile.rb crashing on invalid PODFILE CHECKSUM YAML integers)
+          test -f Vendor/PSOperations/PSOperations.podspec
+          test -f Vendor/PSOperations/Operation.swift
           rm -f Podfile.lock
           pod install
           test -d Pods
           test -f Potatso.xcworkspace/contents.xcworkspacedata
+
+          # Guard: refuse old trunk PSOperations (CalendarCapability / PhotosCapability paths)
+          if find Pods -path '*PhotosCapability.swift' | grep -q . || \
+             find Pods -path '*CalendarCapability.swift' | grep -q .; then
+            echo "::error::Installed PSOperations is the old 4.x trunk layout. Vendored Core was not used."
+            find Pods -iname '*PSOperations*' -type d | head -20
+            exit 1
+          fi
+          OP_FILE="$(find Pods -name 'Operation.swift' -path '*/PSOperations/*' | head -n 1 || true)"
+          if [ -z "$OP_FILE" ]; then
+            echo "::error::PSOperations Operation.swift not found after pod install"
+            find Pods -maxdepth 3 -type d | head -40
+            exit 1
+          fi
+          if ! grep -q 'swift(>=5.9)' "$OP_FILE"; then
+            echo "::error::PSOperations Operation.swift missing Sendable completionBlock fix ($OP_FILE)"
+            exit 1
+          fi
+          echo "PSOperations source OK: $OP_FILE"
           echo "--- workspace schemes ---"
           xcodebuild -list -workspace Potatso.xcworkspace
 

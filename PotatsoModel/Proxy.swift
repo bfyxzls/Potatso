@@ -117,7 +117,7 @@ open class Proxy: BaseModel {
         "chacha20-ietf"
     ]
 
-    open override static func indexedProperties() -> [String] {
+    open override class func indexedProperties() -> [String] {
         return ["name"]
     }
 

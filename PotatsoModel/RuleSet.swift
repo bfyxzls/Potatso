@@ -97,7 +97,7 @@ public final class RuleSet: BaseModel {
         rules = newRules
     }
     
-    public override static func indexedProperties() -> [String] {
+    public override class func indexedProperties() -> [String] {
         return ["name"]
     }
 }

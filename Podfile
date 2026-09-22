@@ -93,4 +93,19 @@ post_install do |installer|
       config.build_settings['SWIFT_VERSION'] = '5.0'
     end
   end
+
+  # RealmSwift 2.10.2 uses Swift 4 collection typealiases removed in Swift 5.
+  # Keep Realm at 2.10.2 (schema/API used by PotatsoModel) and patch sources in place.
+  list_swift = File.join(installer.sandbox.root, 'RealmSwift/RealmSwift/List.swift')
+  if File.exist?(list_swift)
+    contents = File.read(list_swift)
+    patched = contents
+      .gsub('RangeReplaceableRandomAccessSlice', 'Slice')
+      .gsub('DefaultRandomAccessIndices', 'DefaultIndices')
+    if patched != contents
+      File.chmod(0644, list_swift)
+      File.write(list_swift, patched)
+      puts 'Patched RealmSwift List.swift for Swift 5 typealiases'
+    end
+  end
 end

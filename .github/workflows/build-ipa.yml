@@ -108,6 +108,11 @@ jobs:
           test -d Pods/Target\ Support\ Files/PSOperations
           test -f Potatso.xcworkspace/contents.xcworkspacedata
 
+          # RealmSwift 2.10.2 Swift 5 typealias patch (applied in Podfile post_install)
+          grep -q 'typealias SubSequence = Slice' Pods/RealmSwift/RealmSwift/List.swift
+          grep -q 'typealias Indices = DefaultIndices' Pods/RealmSwift/RealmSwift/List.swift
+          ! grep -q 'RangeReplaceableRandomAccessSlice\|DefaultRandomAccessIndices' Pods/RealmSwift/RealmSwift/List.swift
+
           # Path pods keep sources under Vendor/; refuse old trunk layout if somehow present
           if find Pods -path '*PhotosCapability.swift' 2>/dev/null | grep -q . || \
              find Pods -path '*CalendarCapability.swift' 2>/dev/null | grep -q .; then

@@ -54,7 +54,6 @@ PODS:
   - Realm/Headers (2.10.2)
   - RealmSwift (2.10.2):
     - Realm (= 2.10.2)
-  - Reveal-iOS-SDK (1.6.2)
   - SwiftColor (0.4.0)
   - YAML-Framework (0.0.3):
     - LibYAML (~> 0.1.4)
@@ -80,12 +79,11 @@ DEPENDENCIES:
   - ObjectMapper
   - PSOperations
   - RealmSwift (~> 2.10.2)
-  - Reveal-iOS-SDK (~> 1.6.2)
   - SwiftColor
   - YAML-Framework (from `./Library/YAML-Framework`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  trunk:
     - Alamofire
     - Appirater
     - AsyncSwift
@@ -105,7 +103,6 @@ SPEC REPOS:
     - PSOperations
     - Realm
     - RealmSwift
-    - Reveal-iOS-SDK
     - SwiftColor
 
 EXTERNAL SOURCES:
@@ -141,10 +138,9 @@ SPEC CHECKSUMS:
   PSOperations: bf25e1fdeb84940be0e22220a41a5bd690449c2f
   Realm: 0ef72b837fb67e9f4b098bac771ddd72c7fdbb69
   RealmSwift: 07a9ae0505091eda6b2ee7c190c3786d6e90a7b0
-  Reveal-iOS-SDK: e2250b3c155bcfac53ae223ddc1f76d08f206c33
   SwiftColor: c240d8cb2e1a29d731ae8deca8739eac6b9c56bd
   YAML-Framework: e63ac91e0494f10022bd311fa3f12d963f6233e7
 
-PODFILE CHECKSUM: 921ef673d451a839701d3ce09dc389de8b72fbf3
+PODFILE CHECKSUM: 0000000000000000000000000000000000000000
 
-COCOAPODS: 1.6.0.beta.1
+COCOAPODS: 1.15.2

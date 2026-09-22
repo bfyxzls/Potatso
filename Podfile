@@ -1,7 +1,9 @@
-source 'https://github.com/CocoaPods/Specs.git'
+# Use CocoaPods CDN (much faster / more reliable on GitHub Actions than Specs.git)
+source 'https://cdn.cocoapods.org/'
 
 platform :ios, '9.0'
 use_frameworks!
+inhibit_all_warnings!
 
 def library
     pod 'KissXML', '~> 5.2.2'
@@ -32,7 +34,7 @@ target "Potatso" do
     pod 'MBProgressHUD'
     pod 'CallbackURLKit', :path => "./Library/CallbackURLKit"
     pod 'ICDMaterialActivityIndicatorView', '~> 0.1.0'
-    pod 'Reveal-iOS-SDK', '~> 1.6.2', :configurations => ['Debug']
+    # Reveal is optional / often unavailable in CI; skip it for Release IPA builds
     pod 'ICSPullToRefresh', '~> 0.6'
     pod 'ISO8601DateFormatter', '~> 0.8'
     pod 'Alamofire'
@@ -75,5 +77,20 @@ end
 
 target "PotatsoLibraryTests" do
     library
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+      config.build_settings['CODE_SIGN_IDENTITY'] = ''
+      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
+      # Prefer Swift 5 language mode on modern Xcode while allowing older pods to compile where possible
+      config.build_settings['SWIFT_VERSION'] = '5.0' if config.build_settings['SWIFT_VERSION'].to_s.empty?
+    end
+  end
 end
 

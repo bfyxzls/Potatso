@@ -18,5 +18,6 @@ enum Event: String {
 }
 
 func logEvent(_ event: Event, attributes: [String: AnyObject]?) {
-    Answers.logCustomEvent(withName: event.rawValue, customAttributes: attributes)
+    // Crashlytics Answers removed for unsigned CI builds
+    NSLog("[Event] %@ %@", event.rawValue, attributes ?? [:])
 }

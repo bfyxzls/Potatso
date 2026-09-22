@@ -18,6 +18,6 @@
 @import PotatsoModel;
 @import PotatsoBase;
 @import Appirater;
-@import Crashlytics;
+/* Crashlytics/Fabric were Carthage deps; not bundled for unsigned CI builds */
 
 #endif /* Potatso_Bridge_Header_h */

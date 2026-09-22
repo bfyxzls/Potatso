@@ -10,7 +10,7 @@ def library
     pod 'KissXML', '5.2.2'
     pod 'ICSMainFramework', :path => "./Library/ICSMainFramework/"
     pod 'MMWormhole', '2.0.0'
-    pod 'KeychainAccess', '3.1.1'
+    pod 'KeychainAccess', '4.2.2'
 end
 
 def tunnel
@@ -27,18 +27,18 @@ end
 
 target "Potatso" do
     pod 'Aspects', :path => "./Library/Aspects/"
-    pod 'Cartography', '1.0.1'
+    pod 'Cartography', '3.1.0'
     pod 'AsyncSwift', '2.0.4'
-    pod 'SwiftColor', '0.4.0'
+    pod 'SwiftColor', '1.0.0'
     pod 'Appirater', '2.0.5'
-    pod 'Eureka', '4.1.1'
+    pod 'Eureka', '4.3.1'
     pod 'MBProgressHUD', '1.0.0'
     pod 'CallbackURLKit', :path => "./Library/CallbackURLKit"
     pod 'ICDMaterialActivityIndicatorView', '0.1.2'
     pod 'ICSPullToRefresh', '0.6'
     pod 'ISO8601DateFormatter', '0.8'
-    pod 'Alamofire', '4.2.0'
-    pod 'ObjectMapper', '2.2.2'
+    pod 'Alamofire', '4.9.1'
+    pod 'ObjectMapper', '4.2.0'
     pod 'CocoaLumberjack/Swift', '3.0.0'
     pod 'PSOperations', '4.1.0'
     tunnel
@@ -57,8 +57,8 @@ target "PacketProcessor" do
 end
 
 target "TodayWidget" do
-    pod 'Cartography', '1.0.1'
-    pod 'SwiftColor', '0.4.0'
+    pod 'Cartography', '3.1.0'
+    pod 'SwiftColor', '1.0.0'
     library
     socket
     model
@@ -87,9 +87,8 @@ post_install do |installer|
       config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
       config.build_settings['CODE_SIGN_IDENTITY'] = ''
       config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
-      if config.build_settings['SWIFT_VERSION'].to_s.empty?
-        config.build_settings['SWIFT_VERSION'] = '5.0'
-      end
+      # Force Swift 5 for all pods (ObjectMapper 2.x / other Swift 3 pods break on Xcode 15)
+      config.build_settings['SWIFT_VERSION'] = '5.0'
     end
   end
 end

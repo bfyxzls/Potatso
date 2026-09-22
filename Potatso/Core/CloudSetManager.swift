@@ -21,15 +21,8 @@ class CloudSetManager {
     func update() {
         Async.background(after: 1.5) {
             let realm = try! Realm()
-            let uuids = realm.objects(RuleSet.self).filter("isSubscribe = true").map({$0.uuid})
-            
-            var uuidsArray: [String] = []
-            var iterator: LazyMapIterator<RLMIterator<RuleSet>, String>? = nil
-            iterator = uuids.makeIterator()
-            iterator?.forEach({ (tObj) in
-                uuidsArray.append(tObj as String)
-            })
-            
+            let uuidsArray = Array(realm.objects(RuleSet.self).filter("isSubscribe = true").map({ $0.uuid }))
+
             API.updateRuleSetListDetail(uuidsArray) { (response) in
                 if let sets = response.result.value {
                     do {

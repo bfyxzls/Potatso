@@ -20,7 +20,7 @@ open class DBUtils {
         return mRealm!
     }
 
-    open static func add(_ object: BaseModel, update: Bool = true, setModified: Bool = true, inRealm realm: Realm? = nil) throws {
+    public static func add(_ object: BaseModel, update: Bool = true, setModified: Bool = true, inRealm realm: Realm? = nil) throws {
         let mRealm = currentRealm(realm)
         mRealm.beginWrite()
         if setModified {
@@ -30,7 +30,7 @@ open class DBUtils {
         try mRealm.commitWrite()
     }
 
-    open static func add<S: Sequence>(_ objects: S, update: Bool = true, setModified: Bool = true, inRealm realm: Realm? = nil) throws where S.Iterator.Element: BaseModel {
+    public static func add<S: Sequence>(_ objects: S, update: Bool = true, setModified: Bool = true, inRealm realm: Realm? = nil) throws where S.Iterator.Element: BaseModel {
         let mRealm = currentRealm(realm)
         mRealm.beginWrite()
         objects.forEach({
@@ -42,7 +42,7 @@ open class DBUtils {
         try mRealm.commitWrite()
     }
 
-    open static func softDelete<T: BaseModel>(_ id: String, type: T.Type, inRealm realm: Realm? = nil) throws {
+    public static func softDelete<T: BaseModel>(_ id: String, type: T.Type, inRealm realm: Realm? = nil) throws {
         let mRealm = currentRealm(realm)
         guard let object: T = DBUtils.get(id, type: type, inRealm: mRealm) else {
             return
@@ -53,13 +53,13 @@ open class DBUtils {
         try mRealm.commitWrite()
     }
 
-    open static func softDelete<T: BaseModel>(_ ids: [String], type: T.Type, inRealm realm: Realm? = nil) throws {
+    public static func softDelete<T: BaseModel>(_ ids: [String], type: T.Type, inRealm realm: Realm? = nil) throws {
         for id in ids {
             try softDelete(id, type: type, inRealm: realm)
         }
     }
 
-    open static func hardDelete<T: BaseModel>(_ id: String, type: T.Type, inRealm realm: Realm? = nil) throws {
+    public static func hardDelete<T: BaseModel>(_ id: String, type: T.Type, inRealm realm: Realm? = nil) throws {
         let mRealm = currentRealm(realm)
         guard let object: T = DBUtils.get(id, type: type, inRealm: mRealm) else {
             return
@@ -69,13 +69,13 @@ open class DBUtils {
         try mRealm.commitWrite()
     }
 
-    open static func hardDelete<T: BaseModel>(_ ids: [String], type: T.Type, inRealm realm: Realm? = nil) throws {
+    public static func hardDelete<T: BaseModel>(_ ids: [String], type: T.Type, inRealm realm: Realm? = nil) throws {
         for id in ids {
             try hardDelete(id, type: type, inRealm: realm)
         }
     }
 
-    open static func mark<T: BaseModel>(_ id: String, type: T.Type, synced: Bool, inRealm realm: Realm? = nil) throws {
+    public static func mark<T: BaseModel>(_ id: String, type: T.Type, synced: Bool, inRealm realm: Realm? = nil) throws {
         let mRealm = currentRealm(realm)
         guard let object: T = DBUtils.get(id, type: type, inRealm: mRealm) else {
             return
@@ -85,7 +85,7 @@ open class DBUtils {
         try mRealm.commitWrite()
     }
 
-    open static func markAll(syncd: Bool) throws {
+    public static func markAll(syncd: Bool) throws {
         let mRealm = try! Realm()
         mRealm.beginWrite()
         for proxy in mRealm.objects(Proxy.self) {
@@ -166,56 +166,20 @@ extension DBUtils {
     public static func allObjectsToSyncModified() -> [BaseModel] {
         let mRealm = currentRealm(nil)
         let filter = "synced == false && deleted == false"
-        let proxies = mRealm.objects(Proxy.self).filter(filter).map({ $0 })
-        let rulesets = mRealm.objects(RuleSet.self).filter(filter).map({ $0 })
-        let groups = mRealm.objects(ConfigurationGroup.self).filter(filter).map({ $0 })
         var objects: [BaseModel] = []
-        
-        var iterator1: LazyMapIterator<RLMIterator<Proxy>, Proxy>? = nil
-        iterator1 = proxies.makeIterator()
-        iterator1?.forEach({ (tObj) in
-            objects.append(tObj as BaseModel)
-        })
-        
-        var iterator2: LazyMapIterator<RLMIterator<RuleSet>, RuleSet>? = nil
-        iterator2 = rulesets.makeIterator()
-        iterator2?.forEach({ (tObj) in
-            objects.append(tObj as BaseModel)
-        })
-        
-        var iterator3: LazyMapIterator<RLMIterator<ConfigurationGroup>, ConfigurationGroup>? = nil
-        iterator3 = groups.makeIterator()
-        iterator3?.forEach({ (tObj) in
-            objects.append(tObj as BaseModel)
-        })
+        objects.append(contentsOf: Array(mRealm.objects(Proxy.self).filter(filter)))
+        objects.append(contentsOf: Array(mRealm.objects(RuleSet.self).filter(filter)))
+        objects.append(contentsOf: Array(mRealm.objects(ConfigurationGroup.self).filter(filter)))
         return objects
     }
 
     public static func allObjectsToSyncDeleted() -> [BaseModel] {
         let mRealm = currentRealm(nil)
         let filter = "synced == false && deleted == true"
-        let proxies = mRealm.objects(Proxy.self).filter(filter).map({ $0 })
-        let rulesets = mRealm.objects(RuleSet.self).filter(filter).map({ $0 })
-        let groups = mRealm.objects(ConfigurationGroup.self).filter(filter).map({ $0 })
         var objects: [BaseModel] = []
-        
-        var iterator1: LazyMapIterator<RLMIterator<Proxy>, Proxy>? = nil
-        iterator1 = proxies.makeIterator()
-        iterator1?.forEach({ (tObj) in
-            objects.append(tObj as BaseModel)
-        })
-    
-        var iterator2: LazyMapIterator<RLMIterator<RuleSet>, RuleSet>? = nil
-        iterator2 = rulesets.makeIterator()
-        iterator2?.forEach({ (tObj) in
-            objects.append(tObj as BaseModel)
-        })
-        
-        var iterator3: LazyMapIterator<RLMIterator<ConfigurationGroup>, ConfigurationGroup>? = nil
-        iterator3 = groups.makeIterator()
-        iterator3?.forEach({ (tObj) in
-            objects.append(tObj as BaseModel)
-        })
+        objects.append(contentsOf: Array(mRealm.objects(Proxy.self).filter(filter)))
+        objects.append(contentsOf: Array(mRealm.objects(RuleSet.self).filter(filter)))
+        objects.append(contentsOf: Array(mRealm.objects(ConfigurationGroup.self).filter(filter)))
         return objects
     }
 }

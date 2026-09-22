@@ -99,7 +99,9 @@ jobs:
       - name: Install Pods
         run: |
           set -euo pipefail
-          # Do not run pod update — keep Podfile.lock versions
+          # Fresh resolve from Podfile pins (no committed lockfile — avoids CocoaPods
+          # lockfile.rb crashing on invalid PODFILE CHECKSUM YAML integers)
+          rm -f Podfile.lock
           pod install
           test -d Pods
           test -f Potatso.xcworkspace/contents.xcworkspacedata

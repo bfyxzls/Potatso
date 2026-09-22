@@ -39,7 +39,8 @@ target "Potatso" do
     pod 'ISO8601DateFormatter', '0.8'
     pod 'Alamofire', '4.9.1'
     pod 'ObjectMapper', '4.2.0'
-    pod 'CocoaLumberjack/Swift', '3.0.0'
+    # 3.0.0 fails on Swift 5 (@autoclosure forwarding); 3.5.3 keeps DDASLLogger
+    pod 'CocoaLumberjack/Swift', '3.5.3'
     # Vendored Core (Xcode 15 fix). Do NOT use CocoaPods trunk 4.x / 5.0.x tags.
     pod 'PSOperations', :path => './Vendor/PSOperations'
     tunnel

@@ -35,7 +35,7 @@ target "Potatso" do
     pod 'MBProgressHUD', '1.0.0'
     pod 'CallbackURLKit', :path => "./Library/CallbackURLKit"
     pod 'ICDMaterialActivityIndicatorView', '0.1.2'
-    pod 'ICSPullToRefresh', '0.6'
+    pod 'ICSPullToRefresh', :path => './Vendor/ICSPullToRefresh'
     pod 'ISO8601DateFormatter', '0.8'
     pod 'Alamofire', '4.9.1'
     pod 'ObjectMapper', '4.2.0'

@@ -1,7 +1,7 @@
 # Use CocoaPods CDN (faster / more reliable on GitHub Actions than Specs.git)
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '9.0'
+platform :ios, '12.0'
 use_frameworks!
 inhibit_all_warnings!
 

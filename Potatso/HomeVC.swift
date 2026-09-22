@@ -85,7 +85,7 @@ class HomeVC: FormViewController, UINavigationControllerDelegate, HomePresenterP
 
     func updateConnectButton() {
         connectButton.isEnabled = [VPNStatus.on, VPNStatus.off].contains(status)
-        connectButton.setTitleColor(UIColor.init(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: UIControlState())
+        connectButton.setTitleColor(UIColor.init(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: UIControl.State.normal)
         switch status {
         case .connecting, .disconnecting:
             connectButton.animating = true
@@ -245,7 +245,7 @@ class HomeVC: FormViewController, UINavigationControllerDelegate, HomePresenterP
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         view.bringSubview(toFront: connectButton)
-        tableView?.contentInset = UIEdgeInsetsMake(0, 0, connectButtonHeight, 0)
+        tableView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: connectButtonHeight, right: 0)
     }
 
     func setupLayout() {
@@ -265,7 +265,7 @@ class HomeVC: FormViewController, UINavigationControllerDelegate, HomePresenterP
 
     lazy var titleButton: UIButton = {
         let b = UIButton(type: .custom)
-        b.setTitleColor(UIColor.init(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0), for: UIControlState())
+        b.setTitleColor(UIColor.init(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0), for: UIControl.State.normal)
         b.addTarget(self, action: #selector(HomeVC.handleTitleButtonPressed), for: .touchUpInside)
         if let titleLabel = b.titleLabel {
             titleLabel.font = UIFont.boldSystemFont(ofSize: titleLabel.font.pointSize)

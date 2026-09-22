@@ -32,10 +32,10 @@ class CloudDetailViewController: UIViewController, UITableViewDataSource, UITabl
         navigationItem.title = "Detail".localized()
         loadData()
         if isExist(ruleSet.uuid) {
-            subscribeButton.setTitle("Unsubscribe".localized(), for: UIControlState())
+            subscribeButton.setTitle("Unsubscribe".localized(), for: UIControl.State.normal)
             subscribeButton.backgroundColor = "FF5E3B".color
         }else {
-            subscribeButton.setTitle("Subscribe".localized(), for: UIControlState())
+            subscribeButton.setTitle("Subscribe".localized(), for: UIControl.State.normal)
             subscribeButton.backgroundColor = "1E96E2".color
         }
     }
@@ -186,7 +186,7 @@ class CloudDetailViewController: UIViewController, UITableViewDataSource, UITabl
     lazy var subscribeButton: UIButton = {
         let v = UIButton(frame: CGRect.zero)
         v.addTarget(self, action: #selector(subscribe), for: .touchUpInside)
-        v.setTitleColor(UIColor.init(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: UIControlState())
+        v.setTitleColor(UIColor.init(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: UIControl.State.normal)
         return v
     }()
 

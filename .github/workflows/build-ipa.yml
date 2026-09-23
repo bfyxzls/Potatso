@@ -1,0 +1,205 @@
+name: Build unsigned iOS IPA
+
+# 用法：
+#   1. 推送本文件到 GitHub 仓库
+#   2. 进入 Actions -> "Build unsigned iOS IPA" -> Run workflow
+#   3. 构建完成后在 Artifacts 下载 potatso-unsigned-ipa
+#
+# 产物是「未签名」的 .ipa，需再用爱思助手等工具自签后才能装进 iPhone。
+# 本流程不需要 Apple ID 或证书。
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-ipa:
+    runs-on: macos-14
+    timeout-minutes: 120
+
+    env:
+      COCOAPODS_DISABLE_STATS: 'true'
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    steps:
+      - name: Checkout source (with submodules)
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Show toolchain versions
+        run: |
+          sw_vers
+          xcodebuild -version
+          xcode-select -p
+          ruby -v
+          pod --version || true
+
+      - name: Select Xcode
+        run: |
+          # Prefer Xcode 15.x on macos-14 (closer to this Swift 4-era project than Xcode 16)
+          set -euo pipefail
+          ls /Applications | grep -i Xcode || true
+          if [ -d /Applications/Xcode_15.4.app ]; then
+            sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          elif [ -d /Applications/Xcode_15.3.app ]; then
+            sudo xcode-select -s /Applications/Xcode_15.3.app/Contents/Developer
+          elif [ -d /Applications/Xcode_15.2.app ]; then
+            sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
+          elif [ -d /Applications/Xcode_15.1.app ]; then
+            sudo xcode-select -s /Applications/Xcode_15.1.app/Contents/Developer
+          elif [ -d /Applications/Xcode_15.0.1.app ]; then
+            sudo xcode-select -s /Applications/Xcode_15.0.1.app/Contents/Developer
+          else
+            echo "Using default Xcode from runner image"
+          fi
+          xcodebuild -version
+          sudo xcodebuild -license accept || true
+          sudo xcodebuild -runFirstLaunch || true
+
+      - name: Verify required submodules
+        run: |
+          set -euo pipefail
+          ensure_paths() {
+            local missing=0
+            local path
+            for path in \
+              Library/CallbackURLKit \
+              Library/YAML-Framework \
+              Library/ShadowPath/ShadowPath/libmaxminddb \
+              Library/ShadowPath/ShadowPath/shadowsocks-libev
+            do
+              if [ ! -e "$path/.git" ] && [ -z "$(ls -A "$path" 2>/dev/null || true)" ]; then
+                echo "MISSING: $path"
+                missing=1
+              else
+                echo "OK: $path"
+              fi
+            done
+            return "$missing"
+          }
+
+          if ! ensure_paths; then
+            echo "Trying git submodule update --init --recursive ..."
+            git submodule update --init --recursive
+            ensure_paths
+          fi
+
+      - name: Install CocoaPods
+        run: |
+          if ! command -v pod >/dev/null 2>&1; then
+            sudo gem install cocoapods -v 1.15.2 --no-document
+          fi
+          pod --version
+
+      - name: Install Pods
+        run: |
+          set -euo pipefail
+          test -f Vendor/PSOperations/PSOperations.podspec
+          test -f Vendor/PSOperations/Operation.swift
+          grep -q 'swift(>=5.9)' Vendor/PSOperations/Operation.swift
+          rm -f Podfile.lock
+          pod install
+          test -d Pods
+          test -d Pods/Target\ Support\ Files/PSOperations
+          test -f Potatso.xcworkspace/contents.xcworkspacedata
+
+          # RealmSwift 2.10.2 Swift 5 typealias patch (applied in Podfile post_install)
+          grep -q 'typealias SubSequence = Slice' Pods/RealmSwift/RealmSwift/List.swift
+          grep -q 'typealias Indices = DefaultIndices' Pods/RealmSwift/RealmSwift/List.swift
+          ! grep -q 'RangeReplaceableRandomAccessSlice\|DefaultRandomAccessIndices' Pods/RealmSwift/RealmSwift/List.swift
+
+          # Path pods keep sources under Vendor/; refuse old trunk layout if somehow present
+          if find Pods -path '*PhotosCapability.swift' 2>/dev/null | grep -q . || \
+             find Pods -path '*CalendarCapability.swift' 2>/dev/null | grep -q .; then
+            echo "::error::Old trunk PSOperations layout detected under Pods/"
+            exit 1
+          fi
+          echo "PSOperations OK (vendored path pod 5.0.6-ci)"
+          echo "--- workspace schemes ---"
+          xcodebuild -list -workspace Potatso.xcworkspace
+
+      - name: Archive without code signing
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/build"
+          set +e
+          xcodebuild archive \
+            -workspace Potatso.xcworkspace \
+            -scheme Potatso \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/build/Potatso.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/build/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            ENABLE_BITCODE=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            SWIFT_VERSION=5.0 \
+            2>&1 | tee "$RUNNER_TEMP/build/archive.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ] || [ ! -d "$RUNNER_TEMP/build/Potatso.xcarchive" ]; then
+            echo "::error::Archive failed (exit=$status). Last 120 lines:"
+            tail -n 120 "$RUNNER_TEMP/build/archive.log" || true
+            exit 1
+          fi
+
+      - name: Package into unsigned IPA
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/build/Potatso.xcarchive/Products/Applications/Potatso.app"
+          if [ ! -d "$APP" ]; then
+            echo "未找到 Potatso.app，归档目录内容如下："
+            find "$RUNNER_TEMP/build/Potatso.xcarchive" -maxdepth 5 2>/dev/null || true
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+          cd "$RUNNER_TEMP/ipa"
+          zip -qry Potatso-unsigned.ipa Payload
+          echo "--- 产物信息 ---"
+          ls -lh Potatso-unsigned.ipa
+          unzip -l Potatso-unsigned.ipa | head -30
+          echo "--- 版本信息 ---"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist" || true
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist" || true
+          /usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$APP/Info.plist" || true
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: potatso-unsigned-ipa
+          path: ${{ runner.temp }}/ipa/Potatso-unsigned.ipa
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: potatso-build-log
+          path: ${{ runner.temp }}/build/archive.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo "## 构建结果"
+            echo ""
+            echo "- 产物：\`Potatso-unsigned.ipa\`（未签名）"
+            echo "- 下载方式：本页面底部 **Artifacts** 区域"
+            echo "- 下一步：用爱思助手「IPA 签名」自签后安装到 iPhone"
+          } >> "$GITHUB_STEP_SUMMARY"

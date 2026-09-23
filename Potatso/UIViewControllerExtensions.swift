@@ -73,14 +73,14 @@ extension UIViewController: UIGestureRecognizerDelegate  {
 
     func addChildVC(_ child: UIViewController) {
         view.addSubview(child.view)
-        addChildViewController(child)
-        child.didMove(toParentViewController: self)
+        addChild(child)
+        child.didMove(toParent: self)
     }
 
     func removeChildVC(_ child: UIViewController) {
-        child.willMove(toParentViewController: nil)
+        child.willMove(toParent: nil)
         child.view.removeFromSuperview()
-        child.removeFromParentViewController()
+        child.removeFromParent()
     }
     
     @objc func pop() {

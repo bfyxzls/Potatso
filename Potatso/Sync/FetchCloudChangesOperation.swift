@@ -5,7 +5,7 @@ import PSOperations
 
 struct FetchResults {
     var changedRecords: [CKRecord] = []
-    var deletedRecordIDs: [CKRecordID] = []
+    var deletedRecordIDs: [CKRecord.ID] = []
     
     var count: Int {
         return changedRecords.count + deletedRecordIDs.count
@@ -14,14 +14,14 @@ struct FetchResults {
 
 class FetchCloudChangesOperation: PSOperations.Operation {
     
-    let zoneID: CKRecordZoneID
+    let zoneID: CKRecordZone.ID
     var changeToken: CKServerChangeToken?
     
     let delayOperationQueue = PSOperations.OperationQueue()
     let maximumRetryAttempts: Int
     var retryAttempts: Int = 0
 
-    init(zoneID: CKRecordZoneID, maximumRetryAttempts: Int = 3) {
+    init(zoneID: CKRecordZone.ID, maximumRetryAttempts: Int = 3) {
         self.zoneID = zoneID
         self.maximumRetryAttempts = maximumRetryAttempts
         super.init()
@@ -38,10 +38,10 @@ class FetchCloudChangesOperation: PSOperations.Operation {
     }
     
     func fetchCloudChanges(_ changeToken: CKServerChangeToken?,
-                           completionHandler: @escaping (NSError!) -> ()) {
+                           completionHandler: @escaping (NSError?) -> ()) {
         
         let fetchOperation = CKFetchRecordChangesOperation(recordZoneID: zoneID, previousServerChangeToken: changeToken)
-        fetchOperation.resultsLimit = CKQueryOperationMaximumResults
+        fetchOperation.resultsLimit = CKQueryOperation.maximumResults
         var results = FetchResults()
         
         // Enable resultsLimit to test moreComing
@@ -83,7 +83,7 @@ class FetchCloudChangesOperation: PSOperations.Operation {
                         self.fetchCloudChanges(self.changeToken,
                                                completionHandler: completionHandler)
                     } else {
-                        completionHandler(nsError as NSError!)
+                        completionHandler(nsError as NSError?)
                     }
                 }
             }
@@ -124,7 +124,7 @@ class FetchCloudChangesOperation: PSOperations.Operation {
     }
     
     // After `maximumRetryAttempts` this function will return an error
-    func retryFetch(_ error: NSError, retryAfter: Double, completionHandler: @escaping (NSError!) -> ()) {
+    func retryFetch(_ error: NSError, retryAfter: Double, completionHandler: @escaping (NSError?) -> ()) {
         if self.retryAttempts < self.maximumRetryAttempts {
             self.retryAttempts += 1
             
@@ -144,7 +144,7 @@ class FetchCloudChangesOperation: PSOperations.Operation {
     /**
      Implement custom logic here for handling CloudKit fetch errors.
      */
-    func handleCloudKitFetchError(_ error: NSError, completionHandler: @escaping (NSError!) -> ()) {
+    func handleCloudKitFetchError(_ error: NSError, completionHandler: @escaping (NSError?) -> ()) {
         let ckErrorCode: CKError = CKError(_nsError: NSError(domain: Bundle.main.bundleIdentifier!, code: error.code))
         
         switch ckErrorCode.code {

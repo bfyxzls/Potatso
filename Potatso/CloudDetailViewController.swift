@@ -140,7 +140,7 @@ class CloudDetailViewController: UIViewController, UITableViewDataSource, UITabl
         case 0:
             return 0.01
         default:
-            return UITableViewAutomaticDimension
+            return UITableView.automaticDimension
         }
     }
 
@@ -172,13 +172,13 @@ class CloudDetailViewController: UIViewController, UITableViewDataSource, UITabl
         v.tableFooterView = UIView()
         v.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 0.01))
         v.separatorStyle = .singleLine
-        v.rowHeight = UITableViewAutomaticDimension
+        v.rowHeight = UITableView.automaticDimension
         v.estimatedRowHeight = rowHeight
         return v
     }()
 
     lazy var activityIndicator: UIActivityIndicatorView = {
-        let v = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        let v = UIActivityIndicatorView(style: .gray)
         v.hidesWhenStopped = true
         return v
     }()

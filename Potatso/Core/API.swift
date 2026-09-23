@@ -21,7 +21,7 @@ struct API {
     enum Path {
         case ruleSets
         case ruleSet(String)
-        case ruleSetListDetail()
+        case ruleSetListDetail
 
         var url: String {
             let path: String
@@ -30,7 +30,7 @@ struct API {
                 path = "rulesets"
             case .ruleSet(let uuid):
                 path = "ruleset/\(uuid)"
-            case .ruleSetListDetail():
+            case .ruleSetListDetail:
                 path = "rulesets/detail"
             }
             return API.URL + path
@@ -49,7 +49,7 @@ struct API {
 
     static func updateRuleSetListDetail(_ uuids: [String], callback: @escaping  (Alamofire.DataResponse<[RuleSet]>) -> Void) {
         DDLogVerbose("API.updateRuleSetListDetail ===> uuids: \(uuids)")
-        _ = Alamofire.request(Path.ruleSetListDetail().url, method: .post, parameters: ["uuids": uuids], encoding: JSONEncoding.default).responseArray(completionHandler: callback)
+        _ = Alamofire.request(Path.ruleSetListDetail.url, method: .post, parameters: ["uuids": uuids], encoding: JSONEncoding.default).responseArray(completionHandler: callback)
     }
 
 }
@@ -62,9 +62,8 @@ extension RuleSet: Mappable {
             return
         }
         var rules: [Rule] = []
-        if let parsedObject = Mapper<Rule>().mapArray(JSONArray: rulesJSON as! [[String : Any]]){
-            rules.append(contentsOf: parsedObject)
-        }
+        let parsedObject = Mapper<Rule>().mapArray(JSONArray: rulesJSON as! [[String : Any]])
+        rules.append(contentsOf: parsedObject)
         self.rules = rules
     }
 
@@ -252,9 +251,8 @@ extension Alamofire.DataRequest {
             }
 
             if (JSONToMap != nil) {
-                if let parsedObject = Mapper<T>().mapArray(JSONArray: JSONToMap as! [[String : Any]]){
-                    return .success(parsedObject)
-                }
+                let parsedObject = Mapper<T>().mapArray(JSONArray: JSONToMap as! [[String : Any]])
+                return .success(parsedObject)
             }
 
             let failureReason = "ObjectMapper failed to serialize response."

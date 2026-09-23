@@ -106,7 +106,7 @@ class Receipt: NSObject, SKRequestDelegate {
         validateReceipt(receiptPath, tryAgain: false)
     }
 
-    @objc func request(_ request: SKRequest, didFailWithError error: NSError) {
+    @objc func request(_ request: SKRequest, didFailWithError error: Error) {
         failAndTerminate()
     }
 

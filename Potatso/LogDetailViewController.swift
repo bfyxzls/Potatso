@@ -69,7 +69,7 @@ class LogDetailViewController: UIViewController {
         let size = Int(min(pending, 65535))
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: size)
         defer {
-            buffer.deallocate(capacity: size)
+            buffer.deallocate()
         }
         let readSize = Darwin.read(fd, buffer, size)
         data.append(buffer, length: readSize)
